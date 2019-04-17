@@ -3,9 +3,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <semaphore.h>
-
+//counting sem for the 3 operators 
 sem_t operators;
-sem_t callers;
+//mutex for the callers that are connected
 sem_t connected_lock;
 int next_id;
 
@@ -22,41 +22,51 @@ void* phonecall(void* vargs){
         //opening the connected sem that will be checked in the critical section
         sem_wait(&connected_lock);
         
-        if(connected != NUM_LINES){ 
+        if(connected != NUM_LINES){
+            //lock it with incrementing 
             connected++;
             sem_post(&connected_lock);
             printf("Thread %d has available line,call ringing\n",id);
+            //open operators 
             sem_wait(&operators);
             printf("Thread %d is talking to the operator\n",id);
+            //simulates that they talk
             sleep(2);
             printf("Thread %d has got a ticket\n", id);
+            //closes the operator sem
             sem_post(&operators);
+            //increment the connected lock 
             sem_wait(&connected_lock);
             connected--;
             sem_post(&connected_lock);
+            //lock the connected until it goes again
             printf("Thread %d has hung up\n", id);
             break;
         }
-        else{
-            //lock it
+
+         else{
+            //lock it without incrementing it 
             sem_post(&connected_lock);
             printf("The lines are busy right now!\n"); 
             sleep(2);  
         }
+        
 
     }
+
+}
    
-   }
 
 int main(int argc, char* argv[]){
-     sem_init(&connected_lock, 0, 1);
+    /* intialized the sems, thread, and destroys them*/
+    sem_init(&connected_lock, 0, 1);
     //initialize the 3 operators
     sem_init(&operators,0,3);
-    sem_init(&callers, 0, 5);
+    //number of callers 
     int numCallers;
     next_id = 1;
     if(argc == 1){
-        numCallers = 10;
+        printf("You haven't put in anything!");
     }
     else{
         numCallers = atoi(argv[1]);
@@ -79,7 +89,6 @@ int main(int argc, char* argv[]){
    }
     sem_destroy(&connected_lock);
     sem_destroy(&operators);
-    sem_destroy(&callers);
 
 
     return 0;
