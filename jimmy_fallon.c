@@ -57,20 +57,18 @@ void* phonecall(void* vargs){
 }
    
 
-int main(int argc, char* argv[]){
+int main(){
+    int numCallers;
+    printf("How many callers do you want?");
+    scanf("%i", &numCallers);
     /* intialized the sems, thread, and destroys them*/
     sem_init(&connected_lock, 0, 1);
     //initialize the 3 operators
     sem_init(&operators,0,3);
     //number of callers 
-    int numCallers;
+    
     next_id = 1;
-    if(argc == 1){
-        printf("You haven't put in anything!");
-    }
-    else{
-        numCallers = atoi(argv[1]);
-    }
+  
     
    
     pthread_t tid[numCallers];
